@@ -73,12 +73,12 @@ int logger_I2C_eeprom::printFlightList()
   {
     if (_FlightConfig[i].flight_start == 0)
       break;
-    Serial1.print("Flight Nbr: ");
-    Serial1.println(i);
-    Serial1.print("Start: ");
-    Serial1.println(_FlightConfig[i].flight_start);
-    Serial1.print("End: ");
-    Serial1.println(_FlightConfig[i].flight_stop);
+    Serial.print("Flight Nbr: ");
+    Serial.println(i);
+    Serial.print("Start: ");
+    Serial.println(_FlightConfig[i].flight_start);
+    Serial.print("End: ");
+    Serial.println(_FlightConfig[i].flight_stop);
   }
   return i;
 }
@@ -174,31 +174,31 @@ void logger_I2C_eeprom::PrintFlight(int flightNbr)
   {
     int i = startaddress;
     unsigned long currentTime = 0;
-    Serial1.println("StartFlight;" );
+    Serial.println("StartFlight;" );
     while (i < (endaddress + 1))
     {
       i = readFlight(i) + 1;
 
       currentTime = currentTime + getFlightTimeData();
 
-      Serial1.print(String(currentTime) + "," + getFlightAltitudeData()+ "," + _FlightData.temperature+ ",");
-      //Serial1.println("," + _FlightData.w+ ","+ _FlightData.x + "," + _FlightData.y + "," + _FlightData.z);
-      Serial1.print(_FlightData.pressure);
-      Serial1.print(",");
-      Serial1.print(_FlightData.w);
-      Serial1.print(",");
-      Serial1.print(_FlightData.x);
-      Serial1.print(",");
-      Serial1.print(_FlightData.y);
-      Serial1.print(",");
-      Serial1.print(_FlightData.z);
-     //Serial1.println("," + _FlightData.w[0]+ _FlightData.w[1]); //","+ _FlightData.x + "," + _FlightData.y + "," + _FlightData.z);
+      Serial.print(String(currentTime) + "," + getFlightAltitudeData()+ "," + _FlightData.temperature+ ",");
+      //Serial.println("," + _FlightData.w+ ","+ _FlightData.x + "," + _FlightData.y + "," + _FlightData.z);
+      Serial.print(_FlightData.pressure);
+      Serial.print(",");
+      Serial.print(_FlightData.w);
+      Serial.print(",");
+      Serial.print(_FlightData.x);
+      Serial.print(",");
+      Serial.print(_FlightData.y);
+      Serial.print(",");
+      Serial.print(_FlightData.z);
+     //Serial.println("," + _FlightData.w[0]+ _FlightData.w[1]); //","+ _FlightData.x + "," + _FlightData.y + "," + _FlightData.z);
 
     }
-    Serial1.println("EndFlight;" );
+    Serial.println("EndFlight;" );
   }
   else
-    Serial1.println(F("No such flight\n"));
+    Serial.println(F("No such flight\n"));
 }
 
 void logger_I2C_eeprom::printFlightData(int flightNbr)
@@ -221,47 +221,47 @@ void logger_I2C_eeprom::printFlightData(int flightNbr)
       currentTime = currentTime + getFlightTimeData();
       long pos[4];
       getFlightRocketPos(pos);
-      Serial1.print("$" + String("data,") + String(flightNbr) + "," + String(currentTime) + "," + String(getFlightAltitudeData()) + ",");
-      Serial1.print(_FlightData.temperature);
-      Serial1.print(",");
-      Serial1.print(_FlightData.pressure);
-      Serial1.print(",");
+      Serial.print("$" + String("data,") + String(flightNbr) + "," + String(currentTime) + "," + String(getFlightAltitudeData()) + ",");
+      Serial.print(_FlightData.temperature);
+      Serial.print(",");
+      Serial.print(_FlightData.pressure);
+      Serial.print(",");
       //char w[2];
       //floatToByte((float)_FlightData.w/1000,w );
-      //Serial1.print("XXX");
-      //Serial1.print(_FlightData.w);
-      //Serial1.print("XXX");
+      //Serial.print("XXX");
+      //Serial.print(_FlightData.w);
+      //Serial.print("XXX");
       //float w = (float)(_FlightData.w)/1000;
-      //Serial1.print("YYY");
-      //Serial1.print(w);
-      //Serial1.print("YYY");
+      //Serial.print("YYY");
+      //Serial.print(w);
+      //Serial.print("YYY");
       serialFloatPrint((float)(_FlightData.w)/1000);
-      Serial1.print(",");
+      Serial.print(",");
       //char x[2];
       //floatToByte((float)_FlightData.x/1000,x );
-      //Serial1.print(x);
+      //Serial.print(x);
       serialFloatPrint((float)(_FlightData.x)/1000);
-      Serial1.print(",");
+      Serial.print(",");
       //char y[2];
       //floatToByte((float)_FlightData.y/1000,y );
-      //Serial1.print(y);
+      //Serial.print(y);
       serialFloatPrint((float)(_FlightData.y)/1000);
-      Serial1.print(",");
+      Serial.print(",");
       //char z[2];
       //floatToByte((float)_FlightData.z/1000,z );
-      //Serial1.print(z);
+      //Serial.print(z);
       serialFloatPrint((float)(_FlightData.z)/1000);
-      Serial1.print(",");
-      Serial1.print(_FlightData.OutputX);
-      Serial1.print(",");
-      Serial1.print(_FlightData.OutputY);
-      Serial1.print(",");
-      Serial1.print(_FlightData.accelX);
-      Serial1.print(",");
-      Serial1.print(_FlightData.accelY);
-      Serial1.print(",");
-      Serial1.print(_FlightData.accelZ);
-      Serial1.println(";");
+      Serial.print(",");
+      Serial.print(_FlightData.OutputX);
+      Serial.print(",");
+      Serial.print(_FlightData.OutputY);
+      Serial.print(",");
+      Serial.print(_FlightData.accelX);
+      Serial.print(",");
+      Serial.print(_FlightData.accelY);
+      Serial.print(",");
+      Serial.print(_FlightData.accelZ);
+      Serial.println(";");
     }
   }
 }

@@ -6,7 +6,7 @@
 void serialPrintFloatArr(float * arr, int length) {
   for (int i = 0; i < length; i++) {
     serialFloatPrint(arr[i]);
-    Serial1.print(",");
+    Serial.print(",");
   }
 }
 
@@ -21,7 +21,7 @@ void serialFloatPrint(float f) {
     char c1 = (b1 < 10) ? ('0' + b1) : 'A' + b1 - 10;
     char c2 = (b2 < 10) ? ('0' + b2) : 'A' + b2 - 10;
 
-    Serial1.print(c1);
-    Serial1.print(c2);
+    Serial.print(c1);
+    Serial.print(c2);
   }
 }

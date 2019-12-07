@@ -74,8 +74,8 @@ void setup()
   gx_offset = 64;
   gy_offset = -1;
   gz_offset = -33;
-  ServoX.attach(PA1);  // attaches the X servo on PA1 for stm32 or D10 for the Arduino Uno
-  ServoY.attach(PA2);  // attaches the Y servo on PA2 for stm32 or D11 for the Arduino Uno
+  ServoX.attach(10);  // attaches the X servo on PA1 for stm32 or D10 for the Arduino Uno
+  ServoY.attach(11);  // attaches the Y servo on PA2 for stm32 or D11 for the Arduino Uno
 
   // set both servo's to 90 degree
   ServoX.write(90);
@@ -84,8 +84,8 @@ void setup()
 
   Wire.begin();
 
-  Serial1.begin(38400);
-  while (!Serial1);      // wait for Leonardo enumeration, others continue immediately
+  Serial.begin(38400);
+  while (!Serial);      // wait for Leonardo enumeration, others continue immediately
   bmp.begin( config.altimeterResolution);
   // init Kalman filter
   KalmanInit();
@@ -114,13 +114,14 @@ void setup()
   {
     //default values
     defaultConfig();
-    Serial1.println(F("Config invalid"));
-    Serial1.println("ax_offset =" + config.ax_offset);
-    Serial1.println("ay_offset =" + config.ay_offset);
-    Serial1.println("az_offset =" + config.az_offset);
-    Serial1.println("gx_offset =" + config.gx_offset);
-    Serial1.println("gy_offset =" + config.gy_offset);
-    Serial1.println("gz_offset =" + config.gz_offset);
+    /*Serial.println(F("Config invalid"));
+    Serial.println("ax_offset =" + config.ax_offset);
+    Serial.println("ay_offset =" + config.ay_offset);
+    Serial.println("az_offset =" + config.az_offset);
+    Serial.println("gx_offset =" + config.gx_offset);
+    Serial.println("gy_offset =" + config.gy_offset);
+    Serial.println("gz_offset =" + config.gz_offset);
+    */
     //delay(1000);
     //calibrate();
     config.ax_offset = ax_offset;
@@ -149,7 +150,7 @@ void setup()
   int v_ret;
   v_ret = logger.readFlightList();
   //int epromsize = logger.determineSize();
-  //Serial1.println(epromsize);
+  //Serial.println(epromsize);
   long lastFlightNbr = logger.getLastFlightNbr();
 
   if (lastFlightNbr < 0)
@@ -173,8 +174,8 @@ void setup()
 */
 void initialize() {
   // verify connection
-  Serial1.println(F("Testing device connections..."));
-  Serial1.println(mpu.testConnection() ? F("MPU6050 connection successful") : F("MPU6050 connection failed"));
+  Serial.println(F("Testing device connections..."));
+  Serial.println(mpu.testConnection() ? F("MPU6050 connection successful") : F("MPU6050 connection failed"));
 
   // initialize device
   // do not use the constructor so that we can change the gyro and ACCEL RANGE
@@ -189,14 +190,14 @@ void initialize() {
   // MPU6050_GYRO_FS_1000
   // MPU6050_GYRO_FS_2000
 
-  Serial1.println(F("Initializing MPU 6050 device..."));
+  Serial.println(F("Initializing MPU 6050 device..."));
   mpu.setClockSource(MPU6050_CLOCK_PLL_XGYRO);
   mpu.setFullScaleGyroRange(MPU6050_GYRO_FS_250);
   mpu.setFullScaleAccelRange(MPU6050_ACCEL_FS_2);
   mpu.setSleepEnabled(false); // thanks to Jack Elston for pointing this one out!
 
   // load and configure the DMP
-  Serial1.println(F("Initializing DMP"));
+  Serial.println(F("Initializing DMP"));
   devStatus = mpu.dmpInitialize();
   mpu.setXAccelOffset(ax_offset);
   mpu.setYAccelOffset(ay_offset);
@@ -216,7 +217,7 @@ void initialize() {
   if (devStatus == 0)
   {
     // turn on the DMP, now that it's ready
-    Serial1.println(F("Enabling DMP"));
+    Serial.println(F("Enabling DMP"));
     mpu.setDMPEnabled(true);
 
     // get expected DMP packet size for later comparison
@@ -226,8 +227,8 @@ void initialize() {
   {
     // ERROR!
     // 1 = initial memory load failed, 2 = DMP configuration updates failed (if it's going to break, usually the code will be 1)
-    Serial1.print(F("DMP Initialization failed code = "));
-    Serial1.println(devStatus);
+    Serial.print(F("DMP Initialization failed code = "));
+    Serial.println(devStatus);
   }
 }
 
@@ -244,8 +245,8 @@ void loop(void)
 void Mainloop(void)
 {
   long startTime = millis();
-  /*Serial1.print("Start main loop: ");
-    Serial1.println(startTime);*/
+  /*Serial.print("Start main loop: ");
+    Serial.println(startTime);*/
   //read current altitude
   currAltitude = (ReadAltitude() - initialAltitude);
   bool lift = false;
@@ -283,7 +284,7 @@ void Mainloop(void)
       //Save start address
       logger.setFlightStartAddress (currentFileNbr, currentMemaddress);
     }
-    //Serial1.println("We have a liftoff");
+    //Serial.println("We have a liftoff");
   }
   if (canRecord && liftOff)
   {
@@ -315,7 +316,7 @@ void Mainloop(void)
     //store start and end address
     logger.setFlightEndAddress (currentFileNbr, currentMemaddress - 1);
     logger.writeFlightList();
-    // Serial1.println("We have landed");
+    // Serial.println("We have landed");
   }
 
   // get current FIFO count
@@ -383,36 +384,36 @@ void Mainloop(void)
   q1[3] = q.z;
   //serialPrintFloatArr(q1, 4);
   SendTelemetry(q1, 500);
-  /*Serial1.println("");
-    Serial1.print("Yaw: ") ;
-    Serial1.print(mpuYaw );
-    Serial1.print("\tPitch: " );
-    Serial1.print(mpuPitch );
-    Serial1.print("\tRoll: ");
-    Serial1.print(mpuRoll);*/
-  /*Serial1.print("gX: ");
-    Serial1.print(gravity.x);
-    Serial1.print("\tgY: ");
-    Serial1.print(gravity.y);
-    Serial1.print("\tgZ: ");
-    Serial1.print(gravity.z);*/
-  /*Serial1.print(mpuPitch);
-    Serial1.print("    ");
-    Serial1.print(mpuRoll);
-    Serial1.print("    ");
-    Serial1.print(OutputX);
-    Serial1.print("    ");
-    Serial1.println(OutputY);*/
+  /*Serial.println("");
+    Serial.print("Yaw: ") ;
+    Serial.print(mpuYaw );
+    Serial.print("\tPitch: " );
+    Serial.print(mpuPitch );
+    Serial.print("\tRoll: ");
+    Serial.print(mpuRoll);*/
+  /*Serial.print("gX: ");
+    Serial.print(gravity.x);
+    Serial.print("\tgY: ");
+    Serial.print(gravity.y);
+    Serial.print("\tgZ: ");
+    Serial.print(gravity.z);*/
+  /*Serial.print(mpuPitch);
+    Serial.print("    ");
+    Serial.print(mpuRoll);
+    Serial.print("    ");
+    Serial.print(OutputX);
+    Serial.print("    ");
+    Serial.println(OutputY);*/
   if (!liftOff) // && !canRecord)
     delay(10);
 
   // flush buffer to prevent overflow
   mpu.resetFIFO();
-  /*Serial1.print("End main loop: ");
-    Serial1.println(millis());
+  /*Serial.print("End main loop: ");
+    Serial.println(millis());
     long diffTime = startTime - millis();
-    Serial1.print("Diff time: ");
-    Serial1.println(diffTime);*/
+    Serial.print("Diff time: ");
+    Serial.println(diffTime);*/
 }
 
 
@@ -431,9 +432,9 @@ void MainMenu()
 
   while ( readVal != ';') {
     Mainloop();
-    while (Serial1.available())
+    while (Serial.available())
     {
-      readVal = Serial1.read();
+      readVal = Serial.read();
       if (readVal != ';' )
       {
         if (readVal != '\n')
@@ -454,7 +455,7 @@ void interpretCommandBuffer(char *commandbuffer) {
   // calibrate the IMU
   if (commandbuffer[0] == 'c')
   {
-    Serial1.println(F("calibration\n"));
+    Serial.println(F("calibration\n"));
     // Do calibration suff
     state = 0;
     calibrate();
@@ -473,24 +474,24 @@ void interpretCommandBuffer(char *commandbuffer) {
     //config.cksum = 0xBA;
     config.cksum = CheckSumConf(config);
     writeConfigStruc();
-    Serial1.print(F("$OK;\n"));
+    Serial.print(F("$OK;\n"));
   }
   //get altimeter config
   else if (commandbuffer[0] == 'b')
   {
-    Serial1.print(F("$start;\n"));
+    Serial.print(F("$start;\n"));
 
     SendAltiConfig();
 
-    Serial1.print(F("$end;\n"));
+    Serial.print(F("$end;\n"));
   }
   //write altimeter config
   else if (commandbuffer[0] == 's')
   {
     if (writeAltiConfig(commandbuffer))
-      Serial1.print(F("$OK;\n"));
+      Serial.print(F("$OK;\n"));
     else
-      Serial1.print(F("$KO;\n"));
+      Serial.print(F("$KO;\n"));
   }
   //reset alti config
   else if (commandbuffer[0] == 'd')
@@ -502,12 +503,12 @@ void interpretCommandBuffer(char *commandbuffer) {
   else if (commandbuffer[0] == 'h')
   {
     //FastReading = false;
-    Serial1.print(F("$OK;\n"));
+    Serial.print(F("$OK;\n"));
   }
   //this will erase all flight
   else if (commandbuffer[0] == 'e')
   {
-    Serial1.println(F("Erase\n"));
+    Serial.println(F("Erase\n"));
     logger.clearFlightList();
     logger.writeFlightList();
   }
@@ -515,22 +516,22 @@ void interpretCommandBuffer(char *commandbuffer) {
   else if (commandbuffer[0] == 'w')
   {
     if (commandbuffer[1] == '1') {
-      Serial1.print(F("Start Recording\n"));
+      Serial.print(F("Start Recording\n"));
       recording = true;
     }
     else {
-      Serial1.print(F("Stop Recording\n"));
+      Serial.print(F("Stop Recording\n"));
       recording = false;
     }
-    Serial1.print(F("$OK;\n"));
+    Serial.print(F("$OK;\n"));
   }
   //this will read one flight
   else if (commandbuffer[0] == 'r')
   {
     char temp[3];
-    Serial1.println(F("Read flight: "));
-    Serial1.println( commandbuffer[1]);
-    Serial1.println( "\n");
+    Serial.println(F("Read flight: "));
+    Serial.println( commandbuffer[1]);
+    Serial.println( "\n");
     temp[0] = commandbuffer[1];
     if (commandbuffer[2] != '\0')
     {
@@ -545,24 +546,24 @@ void interpretCommandBuffer(char *commandbuffer) {
       logger.PrintFlight(atoi(temp));
     }
     else
-      Serial1.println(F("not a valid flight"));
+      Serial.println(F("not a valid flight"));
   }
   //Number of flight
   else if (commandbuffer[0] == 'n')
   {
-    Serial1.println(F("Number of flight \n"));
-    Serial1.print(F("n;"));
+    Serial.println(F("Number of flight \n"));
+    Serial.print(F("n;"));
     logger.printFlightList();
   }
   //list all flights
   else if (commandbuffer[0] == 'l')
   {
-    Serial1.println(F("Flight List: \n"));
+    Serial.println(F("Flight List: \n"));
     logger.printFlightList();
   }  //get all flight data
   else if (commandbuffer[0] == 'a')
   {
-    Serial1.print(F("$start;\n"));
+    Serial.print(F("$start;\n"));
     //getFlightList()
     int i;
     ///todo
@@ -571,25 +572,25 @@ void interpretCommandBuffer(char *commandbuffer) {
       logger.printFlightData(i);
     }
 
-    Serial1.print(F("$end;\n"));
+    Serial.print(F("$end;\n"));
   }
   //telemetry on/off
   else if (commandbuffer[0] == 'y')
   {
     if (commandbuffer[1] == '1') {
-      Serial1.print(F("Telemetry enabled\n"));
+      Serial.print(F("Telemetry enabled\n"));
       telemetryEnable = true;
     }
     else {
-      Serial1.print(F("Telemetry disabled\n"));
+      Serial.print(F("Telemetry disabled\n"));
       telemetryEnable = false;
     }
-    Serial1.print(F("$OK;\n"));
+    Serial.print(F("$OK;\n"));
   }
   else
   {
-    Serial1.println(F("Unknown command" ));
-    Serial1.println(commandbuffer[0]);
+    Serial.println(F("Unknown command" ));
+    Serial.println(commandbuffer[0]);
   }
 }
 
@@ -610,56 +611,57 @@ void SendTelemetry(float * arr, int freq) {
       pressure = bmp.readPressure();
       temperature = bmp.readTemperature();
       last_telem_time = millis();
-      Serial1.print(F("$telemetry,"));
-      Serial1.print("RocketMotorGimbal");
-      Serial1.print(F(","));
+     /* Serial.print(F("$telemetry,"));
+      Serial.print("RocketMotorGimbal");
+      Serial.print(F(","));
       //tab 1
       //GyroX
-      Serial1.print(mpu.getRotationX());
-      Serial1.print(F(","));
+      Serial.print(mpu.getRotationX());
+      Serial.print(F(","));
       //GyroY
-      Serial1.print(mpu.getRotationY());
-      Serial1.print(F(","));
+      Serial.print(mpu.getRotationY());
+      Serial.print(F(","));
       //GyroZ
-      Serial1.print(mpu.getRotationZ());
-      Serial1.print(F(","));
+      Serial.print(mpu.getRotationZ());
+      Serial.print(F(","));
       //AccelX
-      Serial1.print(mpu.getAccelerationX());
-      Serial1.print(F(","));
+      Serial.print(mpu.getAccelerationX());
+      Serial.print(F(","));
       //AccelY
-      Serial1.print(mpu.getAccelerationY());
-      Serial1.print(F(","));
+      Serial.print(mpu.getAccelerationY());
+      Serial.print(F(","));
       //AccelZ
-      Serial1.print(mpu.getAccelerationZ());
-      Serial1.print(F(","));
+      Serial.print(mpu.getAccelerationZ());
+      Serial.print(F(","));
       //OrientX
-      Serial1.print(mpuYaw);
-      Serial1.print(F(","));
+      Serial.print(mpuYaw);
+      Serial.print(F(","));
       //OrientY
-      Serial1.print(mpuPitch);
-      Serial1.print(F(","));
+      Serial.print(mpuPitch);
+      Serial.print(F(","));
       //OrientZ
-      Serial1.print(mpuRoll);
-      Serial1.print(F(","));
-
+      Serial.print(mpuRoll);
+      Serial.print(F(","));
+*/
       //tab 2
       //Altitude
-      Serial1.print(currAltitude);
-      Serial1.print(F(","));
+      Serial.print(currAltitude);
+      Serial.print(F(","));
       //temperature
-      Serial1.print(temperature);
-      Serial1.print(F(","));
+      Serial.print(temperature);
+      Serial.print(F(","));
       //Pressure
-      Serial1.print(pressure);
-      Serial1.print(F(","));
+      Serial.print(pressure);
+      Serial.print(F(","));
       //Batt voltage
-      pinMode(PB1, INPUT_ANALOG);
-      batVoltage = analogRead(PB1);
-      Serial1.print(batVoltage);
-      Serial1.print(F(","));
+      //TODO: This pin should be declared in the scope
+      pinMode(1, INPUT);
+      batVoltage = analogRead(1);
+      Serial.print(batVoltage);
+      Serial.print(F(","));
       //tab3
       serialPrintFloatArr(arr, 4);
-      Serial1.println(F(";"));
+      Serial.println(F(";"));
     }
 }
 
@@ -671,63 +673,63 @@ void SendTelemetry(float * arr, int freq) {
 void SendAltiConfig() {
   bool ret = readAltiConfig();
   //if (!ret)
-  //  Serial1.print(F("invalid conf"));
+  //  Serial.print(F("invalid conf"));
 
-  Serial1.print(F("$alticonfig"));
-  Serial1.print(F(","));
+  Serial.print(F("$alticonfig"));
+  Serial.print(F(","));
   //AltimeterName
-  Serial1.print("RocketMotorGimbal");
-  Serial1.print(F(","));
-  Serial1.print(config.ax_offset);
-  Serial1.print(F(","));
-  Serial1.print(config.ay_offset);
-  Serial1.print(F(","));
-  Serial1.print(config.az_offset);
-  Serial1.print(F(","));
-  Serial1.print(config.gx_offset);
-  Serial1.print(F(","));
-  Serial1.print(config.gy_offset);
-  Serial1.print(F(","));
-  Serial1.print(config.gz_offset);
-  Serial1.print(F(","));
-  Serial1.print(config.KpX);
-  Serial1.print(F(","));
-  Serial1.print(config.KiX);
-  Serial1.print(F(","));
-  Serial1.print(config.KdX);
-  Serial1.print(F(","));
-  Serial1.print(config.KpY);
-  Serial1.print(F(","));
-  Serial1.print(config.KiY);
-  Serial1.print(F(","));
-  Serial1.print(config.KdY);
-  Serial1.print(F(","));
-  Serial1.print(config.ServoXMin);
-  Serial1.print(F(","));
-  Serial1.print(config.ServoXMax);
-  Serial1.print(F(","));
-  Serial1.print(config.ServoYMin);
-  Serial1.print(F(","));
-  Serial1.print(config.ServoYMax);
-  Serial1.print(F(","));
-  Serial1.print(config.connectionSpeed);
-  Serial1.print(F(","));
-  Serial1.print(config.altimeterResolution);
-  Serial1.print(F(","));
-  Serial1.print(config.eepromSize);
-  Serial1.print(F(","));
+  Serial.print("RocketMotorGimbal");
+  Serial.print(F(","));
+  Serial.print(config.ax_offset);
+  Serial.print(F(","));
+  Serial.print(config.ay_offset);
+  Serial.print(F(","));
+  Serial.print(config.az_offset);
+  Serial.print(F(","));
+  Serial.print(config.gx_offset);
+  Serial.print(F(","));
+  Serial.print(config.gy_offset);
+  Serial.print(F(","));
+  Serial.print(config.gz_offset);
+  Serial.print(F(","));
+  Serial.print(config.KpX);
+  Serial.print(F(","));
+  Serial.print(config.KiX);
+  Serial.print(F(","));
+  Serial.print(config.KdX);
+  Serial.print(F(","));
+  Serial.print(config.KpY);
+  Serial.print(F(","));
+  Serial.print(config.KiY);
+  Serial.print(F(","));
+  Serial.print(config.KdY);
+  Serial.print(F(","));
+  Serial.print(config.ServoXMin);
+  Serial.print(F(","));
+  Serial.print(config.ServoXMax);
+  Serial.print(F(","));
+  Serial.print(config.ServoYMin);
+  Serial.print(F(","));
+  Serial.print(config.ServoYMax);
+  Serial.print(F(","));
+  Serial.print(config.connectionSpeed);
+  Serial.print(F(","));
+  Serial.print(config.altimeterResolution);
+  Serial.print(F(","));
+  Serial.print(config.eepromSize);
+  Serial.print(F(","));
   //alti major version
-  Serial1.print(MAJOR_VERSION);
+  Serial.print(MAJOR_VERSION);
   //alti minor version
-  Serial1.print(F(","));
-  Serial1.print(MINOR_VERSION);
-  Serial1.print(F(","));
-  Serial1.print(config.unit);
-  Serial1.print(F(","));
-  Serial1.print(config.endRecordAltitude);
-  Serial1.print(F(","));
-  Serial1.print(config.beepingFrequency);
-  Serial1.print(F(";\n"));
+  Serial.print(F(","));
+  Serial.print(MINOR_VERSION);
+  Serial.print(F(","));
+  Serial.print(config.unit);
+  Serial.print(F(","));
+  Serial.print(config.endRecordAltitude);
+  Serial.print(F(","));
+  Serial.print(config.beepingFrequency);
+  Serial.print(F(";\n"));
 }
 
 
@@ -741,12 +743,12 @@ void SendAltiConfig() {
 */
 void calibrate() {
   // start message
-  Serial1.println("\nMPU6050 Calibration Sketch");
+  Serial.println("\nMPU6050 Calibration Sketch");
   //delay(1000);
-  Serial1.println("\nYour MPU6050 should be placed in horizontal position, with package letters facing up. \nDon't touch it until you see a finish message.\n");
+  Serial.println("\nYour MPU6050 should be placed in horizontal position, with package letters facing up. \nDon't touch it until you see a finish message.\n");
   //delay(1000);
   // verify connection
-  Serial1.println(mpu.testConnection() ? "MPU6050 connection successful" : "MPU6050 connection failed");
+  Serial.println(mpu.testConnection() ? "MPU6050 connection successful" : "MPU6050 connection failed");
   //delay(1000);
   // reset offsets
   mpu.setXAccelOffset(0);
@@ -758,14 +760,14 @@ void calibrate() {
 
   while (1) {
     if (state == 0) {
-      Serial1.println("\nReading sensors for first time...");
+      Serial.println("\nReading sensors for first time...");
       meansensors();
       state++;
       delay(100);
     }
 
     if (state == 1) {
-      Serial1.println("\nCalculating offsets...");
+      Serial.println("\nCalculating offsets...");
       calibration();
       state++;
       delay(100);
@@ -773,34 +775,34 @@ void calibrate() {
 
     if (state == 2) {
       meansensors();
-      Serial1.println("\nFINISHED!");
-      Serial1.print("\nSensor readings with offsets:\t");
-      Serial1.print(mean_ax);
-      Serial1.print("\t");
-      Serial1.print(mean_ay);
-      Serial1.print("\t");
-      Serial1.print(mean_az);
-      Serial1.print("\t");
-      Serial1.print(mean_gx);
-      Serial1.print("\t");
-      Serial1.print(mean_gy);
-      Serial1.print("\t");
-      Serial1.println(mean_gz);
-      Serial1.print("Your offsets:\t");
-      Serial1.print(ax_offset);
-      Serial1.print("\t");
-      Serial1.print(ay_offset);
-      Serial1.print("\t");
-      Serial1.print(az_offset);
-      Serial1.print("\t");
-      Serial1.print(gx_offset);
-      Serial1.print("\t");
-      Serial1.print(gy_offset);
-      Serial1.print("\t");
-      Serial1.println(gz_offset);
-      Serial1.println("\nData is printed as: acelX acelY acelZ giroX giroY giroZ");
-      Serial1.println("Check that your sensor readings are close to 0 0 16384 0 0 0");
-      Serial1.println("If calibration was succesful write down your offsets so you can set them in your projects using something similar to mpu.setXAccelOffset(youroffset)");
+      Serial.println("\nFINISHED!");
+      Serial.print("\nSensor readings with offsets:\t");
+      Serial.print(mean_ax);
+      Serial.print("\t");
+      Serial.print(mean_ay);
+      Serial.print("\t");
+      Serial.print(mean_az);
+      Serial.print("\t");
+      Serial.print(mean_gx);
+      Serial.print("\t");
+      Serial.print(mean_gy);
+      Serial.print("\t");
+      Serial.println(mean_gz);
+      Serial.print("Your offsets:\t");
+      Serial.print(ax_offset);
+      Serial.print("\t");
+      Serial.print(ay_offset);
+      Serial.print("\t");
+      Serial.print(az_offset);
+      Serial.print("\t");
+      Serial.print(gx_offset);
+      Serial.print("\t");
+      Serial.print(gy_offset);
+      Serial.print("\t");
+      Serial.println(gz_offset);
+      Serial.println("\nData is printed as: acelX acelY acelZ giroX giroY giroZ");
+      Serial.println("Check that your sensor readings are close to 0 0 16384 0 0 0");
+      Serial.println("If calibration was succesful write down your offsets so you can set them in your projects using something similar to mpu.setXAccelOffset(youroffset)");
       //while (1);
       break;
     }
@@ -861,7 +863,7 @@ void calibration() {
     mpu.setZGyroOffset(gz_offset);
 
     meansensors();
-    Serial1.println("...");
+    Serial.println("...");
     blinkState = !blinkState;
     digitalWrite(LED_PIN, blinkState);
     if (abs(mean_ax) <= acel_deadzone) ready++;
