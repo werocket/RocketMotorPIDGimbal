@@ -23,6 +23,20 @@
    SDA - A4  or pin SDA on the stm32
    INT - D2 (not used)
 
+  Main Menu options:
+        c - calibration
+        b - get altimeter config
+        s - write altimeter config
+        d - reset altimeter config
+        h - hello
+        e - erase all flight
+        w - start/stop recording
+        r - read one flight
+        n - number of flight
+        l - list all flights
+        a - get all flight data
+        y - Telemetry on/off
+
   TODO:
   Build an Android interface to monitor the telemetry and configure it
 
@@ -383,7 +397,7 @@ void Mainloop(void)
   q1[2] = q.y;
   q1[3] = q.z;
   //serialPrintFloatArr(q1, 4);
-  SendTelemetry(q1, 500);
+  //SendTelemetry(q1, 500);
   /*Serial.println("");
     Serial.print("Yaw: ") ;
     Serial.print(mpuYaw );
@@ -596,10 +610,10 @@ void interpretCommandBuffer(char *commandbuffer) {
 
 /*
 
-   Send telemetry to the Android device
+   Send telemetry to the Android device - Uncomment if needed
 
 */
-void SendTelemetry(float * arr, int freq) {
+/*void SendTelemetry(float * arr, int freq) {
 
   float currAltitude;
   float temperature;
@@ -611,7 +625,7 @@ void SendTelemetry(float * arr, int freq) {
       pressure = bmp.readPressure();
       temperature = bmp.readTemperature();
       last_telem_time = millis();
-     /* Serial.print(F("$telemetry,"));
+      Serial.print(F("$telemetry,"));
       Serial.print("RocketMotorGimbal");
       Serial.print(F(","));
       //tab 1
@@ -642,7 +656,7 @@ void SendTelemetry(float * arr, int freq) {
       //OrientZ
       Serial.print(mpuRoll);
       Serial.print(F(","));
-*/
+
       //tab 2
       //Altitude
       Serial.print(currAltitude);
@@ -664,7 +678,7 @@ void SendTelemetry(float * arr, int freq) {
       Serial.println(F(";"));
     }
 }
-
+*/
 /*
 
    Send the Gimbal configuration to the Android device
