@@ -10,6 +10,9 @@
 
    You can use an Arduino Uno/Nano or stm32F103C board
 
+   TODO: A good way to understand how this gimbal works, is make a small copy of this code.
+   Just with the necessary to make to gimbal work.
+
    Servo Connection
    BROWN - gnd
    red - 5v
@@ -82,12 +85,12 @@ double ReadAltitude()
 */
 void setup()
 {
-  ax_offset = 1118;
+  ax_offset = 1119;
   ay_offset = 513;
   az_offset = 1289;
-  gx_offset = 64;
-  gy_offset = -1;
-  gz_offset = -33;
+  gx_offset = 63;
+  gy_offset = 0;
+  gz_offset = -34;
   ServoX.attach(10);  // attaches the X servo on PA1 for stm32 or D10 for the Arduino Uno
   ServoY.attach(11);  // attaches the Y servo on PA2 for stm32 or D11 for the Arduino Uno
 
@@ -179,6 +182,7 @@ void setup()
   }
   canRecord = logger.CanRecord();
   //canRecord = true;
+  Serial.println("Configuration setup done - ready to continue");
 }
 
 /*
@@ -256,11 +260,15 @@ void loop(void)
   MainMenu();
 }
 
+/* Mainloop is responsable to make the gimbal work with the PID and information from the sensors.
+   This function have several features as recording reads, liftOff detection, etc. Initially is better
+   to use only the gimbal and comment the unnecessary features
+*/
 void Mainloop(void)
 {
   long startTime = millis();
-  /*Serial.print("Start main loop: ");
-    Serial.println(startTime);*/
+  Serial.print("Start main loop: ");
+  Serial.println(startTime);
   //read current altitude
   currAltitude = (ReadAltitude() - initialAltitude);
   bool lift = false;
@@ -382,6 +390,7 @@ void Mainloop(void)
   InputY = mpuRoll;
   myPIDY.Compute();
 
+  Serial.println("Writing to servos");
   //if using PID do those
   ServoX.write(-OutputX + 90);
   ServoY.write(OutputY + 90);
@@ -396,7 +405,7 @@ void Mainloop(void)
   q1[1] = q.x;
   q1[2] = q.y;
   q1[3] = q.z;
-  //serialPrintFloatArr(q1, 4);
+  serialPrintFloatArr(q1, 4);
   //SendTelemetry(q1, 500);
   /*Serial.println("");
     Serial.print("Yaw: ") ;
@@ -423,11 +432,11 @@ void Mainloop(void)
 
   // flush buffer to prevent overflow
   mpu.resetFIFO();
-  /*Serial.print("End main loop: ");
+  Serial.print("End main loop: ");
     Serial.println(millis());
     long diffTime = startTime - millis();
     Serial.print("Diff time: ");
-    Serial.println(diffTime);*/
+    Serial.println(diffTime);
 }
 
 
@@ -442,7 +451,7 @@ void MainMenu()
   int i = 0;
 
   char commandbuffer[300];
-
+  Serial.println("Ready in Main Menu");
 
   while ( readVal != ';') {
     Mainloop();
